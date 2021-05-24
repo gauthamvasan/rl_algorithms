@@ -1,0 +1,8 @@
+gamma: 1.
+lmbda: 0.95
+lr: 0.0003
+l2_reg: 0.
+batch_size: 2048
+opt_batch_size: 128
+n_epochs: 10
+clip_epsilon: 0.2

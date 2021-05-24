@@ -1,0 +1,15 @@
+# Learner
+gamma: 0.99
+alpha: 0.2
+lr: 0.0003
+batch_size: 256
+n_epochs: 1
+polyak: 0.995
+n_buffer: 1000000
+steps_between_updates: 1
+n_warmup: 1000
+
+# Two hidden layers with 256 units each, ReLU activations
+
+# Task
+env: "InvertedDoublePendulum-v2"
