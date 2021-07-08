@@ -10,7 +10,7 @@ mpl.use("TKAgg")
 import matplotlib.pyplot as plt
 
 from rl_algorithms.agent.learner import BatchActorCritic
-from rl_algorithms.agent.mlp_policies import Actor, Critic
+from rl_algorithms.agent.mlp_policies import MLPGaussianActor, Critic
 from rl_algorithms.agent.buffer import SimpleBuffer
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -26,10 +26,10 @@ def main():
 
     # Task setup block starts
     # Do not change
-    env = gym.make('CartPole-v1')
+    env = gym.make(cfg["env"])
     env.seed(seed)
     o_dim = env.observation_space.shape[0]
-    a_dim = env.action_space.n
+    a_dim = env.action_space.shape[0]
     # Task setup block end
 
     # Learner setup block
@@ -39,7 +39,7 @@ def main():
     cfg["action_dim"] = a_dim
     np.random.seed(seed)
     buffer = SimpleBuffer()
-    pi = Actor(cfg=cfg, device=device)
+    pi = MLPGaussianActor(cfg=cfg, device=device)
     critic = Critic(cfg=cfg, device=device)
     learner = BatchActorCritic(cfg=cfg, pi=pi, critic=critic, buffer=buffer, device=device)
     ####### End

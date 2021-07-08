@@ -2,3 +2,11 @@ gamma: 1
 lr: 0.0003
 l2_reg: 0.
 batch_size: 20
+
+# Two hidden layers with 64 units each, ReLU activations
+mlp:
+  hidden_sizes: [64, 64]
+  activation: "relu"
+
+# Task
+env: "Reacher-v2"

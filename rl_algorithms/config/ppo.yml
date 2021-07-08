@@ -6,3 +6,11 @@ batch_size: 2048
 opt_batch_size: 128
 n_epochs: 10
 clip_epsilon: 0.2
+
+# Two hidden layers with 64 units each, ReLU activations
+mlp:
+  hidden_sizes: [64, 64]
+  activation: "relu"
+
+# Task
+env: "Reacher-v2"
