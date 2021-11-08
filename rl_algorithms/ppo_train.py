@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from rl_algorithms.agent.learner import PPO
 from rl_algorithms.agent.mlp_policies import MLPGaussianActor, Critic
-from rl_algorithms.agent.buffer import SimpleBuffer
+from rl_algorithms.agent.replay_buffer import SimpleBuffer
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

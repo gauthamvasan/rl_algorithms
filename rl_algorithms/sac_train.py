@@ -10,7 +10,7 @@ mpl.use("TKAgg")
 import matplotlib.pyplot as plt
 
 from rl_algorithms.agent.mlp_policies import SACPolicy
-from rl_algorithms.agent.buffer import SACReplayBuffer
+from rl_algorithms.agent.replay_buffer import SACReplayBuffer
 from rl_algorithms.agent.agents import SACAgent
 from rl_algorithms.plot import smoothed_curve
 
