@@ -43,6 +43,7 @@ class SacRadAgent:
             update_epochs=50,
             max_updates_per_step=10,
             init_steps=1000,
+            freeze_cnn=False,
     ):
         self.device = device
         self.discount = discount
@@ -64,9 +65,11 @@ class SacRadAgent:
 
         self.action_dim = action_shape[0]
 
-        self.actor = ActorModel(image_shape, proprioception_shape, action_shape[0], net_params, rad_offset).to(device)
+        self.actor = ActorModel(image_shape, proprioception_shape, action_shape[0], net_params,
+                                rad_offset, freeze_cnn).to(device)
 
-        self.critic = CriticModel(image_shape, proprioception_shape, action_shape[0], net_params, rad_offset).to(device)
+        self.critic = CriticModel(image_shape, proprioception_shape, action_shape[0], net_params,
+                                  rad_offset, freeze_cnn).to(device)
 
         self.critic_target = copy.deepcopy(self.critic)  # also copies the encoder instance
 

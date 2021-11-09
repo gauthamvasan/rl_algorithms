@@ -64,7 +64,7 @@ def parse_args():
     parser.add_argument('--alpha_lr', default=1e-4, type=float)
     # misc
     parser.add_argument('--seed', required=True, type=int)
-    parser.add_argument('--work_dir', default='.', type=str)
+    parser.add_argument('--work_dir', default='./results', type=str)
     parser.add_argument('--save_tb', default=False, action='store_true')
     parser.add_argument('--save_model', default=True, action='store_true')
     # parser.add_argument('--save_buffer', default=False, action='store_true')
@@ -72,6 +72,7 @@ def parse_args():
     parser.add_argument('--load_model', default=-1, type=int)
     parser.add_argument('--device', default='cuda:0', type=str)
     parser.add_argument('--lock', default=False, action='store_true')
+    parser.add_argument('--freeze_cnn', default=False, action='store_true')
 
     args = parser.parse_args()
     return args
@@ -97,7 +98,7 @@ def main():
     else:
         raise NotImplementedError('Not a supported mode!')
 
-    args.work_dir += f'/results/{version}_' \
+    args.work_dir += f'/{version}_' \
                      f'seed={args.seed}_tol={args.tol}_' \
                      f'image_period={args.image_period}_' \
                      f'image_shape={image_shape}/'
@@ -135,7 +136,7 @@ def main():
         batch_size=args.batch_size,
         max_updates_per_step=args.max_updates_per_step,
         init_steps=args.init_steps,
-
+        freeze_cnn=args.freeze_cnn
     )
 
     L = Logger(args.work_dir, use_tb=args.save_tb)
