@@ -2,13 +2,9 @@ import cv2
 import gym
 
 import numpy as np
-import multiprocessing as mp
 
 from collections import deque
-from mujoco_py import GlfwContext
 from gym.spaces import Box
-
-GlfwContext(offscreen=True)
 
 
 class VisualMujocoReacher2D(gym.Wrapper):
@@ -99,22 +95,25 @@ class VisualMujocoReacher2D(gym.Wrapper):
 
 if __name__ == '__main__':
     import torch
+    import matplotlib.pyplot as plt
 
     print(torch.__version__)
     env = VisualMujocoReacher2D(0.072, (9, 125, 200), image_period=3)
     img, ob = env.reset()
     img = np.transpose(img, [1, 2, 0])
-    # cv2.imshow('', img[:, :, 6:9])
-    # cv2.waitKey(0)
+    # create two subplots
+    plt.ion()
+    ax1 = plt.subplot(1, 1, 1)
+    im1 = ax1.imshow(img[:, :, 6:9])
 
     waitKey = 1
     while True:
+        im1.set_data(img[:, :, 6:9])
+        plt.pause(0.05)
         a = env.action_space.sample()
         img, ob, reward, done, info = env.step(a)
         print(ob)
         img = np.transpose(img, [1, 2, 0])
-        # cv2.imshow('', img[:, :, 6:9])
-        # cv2.waitKey(waitKey)
         if done:
             env.reset()
-            # waitKey = 0
+    plt.show()
