@@ -171,10 +171,14 @@ class ActorModel(nn.Module):
     """MLP actor network."""
 
     def __init__(
-            self, image_shape, proprioception_shape, action_dim, net_params, rad_offset):
+            self, image_shape, proprioception_shape, action_dim, net_params, rad_offset, freeze_cnn=False):
         super().__init__()
 
         self.encoder = EncoderModel(image_shape, proprioception_shape, net_params, rad_offset)
+        if freeze_cnn:
+            print("Actor CNN weights won't be trained!")
+            for param in self.encoder.parameters():
+                param.requires_grad = False
 
         mlp_params = net_params['mlp']
         mlp_params[0][0] = self.encoder.latent_dim
@@ -249,10 +253,14 @@ class CriticModel(nn.Module):
     """Critic network, employes two q-functions."""
 
     def __init__(
-            self, image_shape, proprioception_shape, action_dim, net_params, rad_offset):
+            self, image_shape, proprioception_shape, action_dim, net_params, rad_offset, freeze_cnn=False):
         super().__init__()
 
         self.encoder = EncoderModel(image_shape, proprioception_shape, net_params, rad_offset)
+        if freeze_cnn:
+            print("Critic CNN weights won't be trained!")
+            for param in self.encoder.parameters():
+                param.requires_grad = False
 
         self.Q1 = QFunction(
             self.encoder.latent_dim, action_dim, net_params
@@ -274,3 +282,28 @@ class CriticModel(nn.Module):
         self.outputs['q2'] = q2s
 
         return q1s, q2s
+
+if __name__ == '__main__':
+    config = {
+        'conv': [
+            # in_channel, out_channel, kernel_size, stride
+            [-1, 32, 3, 2],
+            [32, 32, 3, 2],
+            [32, 32, 3, 2],
+            [32, 32, 3, 1],
+        ],
+
+        'latent': 50,
+
+        'mlp': [
+            [-1, 1024],
+            [1024, 1024],
+            [1024, -1]
+        ],
+    }
+    encoder = EncoderModel(image_shape=(3, 256, 256), proprioception_shape=(5,), net_params=config, rad_offset=0.01)
+    actor = ActorModel(image_shape=(3, 256, 256), proprioception_shape=(5,), net_params=config,
+                       action_dim=2, rad_offset=0.01)
+    img = torch.zeros((1, 3, 256, 256))
+    prop = torch.zeros((1, 5))
+    actor.forward(img, prop, random_rad=False)
