@@ -5,6 +5,7 @@ import time
 import json
 
 import rl_algorithms.agent.utils as utils
+import numpy as np
 
 from rl_algorithms.agent.sac_rad import SacRadAgent
 from rl_algorithms.logger import Logger
@@ -28,6 +29,11 @@ config = {
     ],
 }
 
+def save_returns_np(fname, rets, ep_steps):
+    data = np.zeros((2, len(rets)))
+    data[0] = np.array(rets)
+    data[1] = np.array(ep_steps)
+    np.savetxt(fname, data)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -113,6 +119,9 @@ def main():
     with open(os.path.join(args.work_dir, 'args.json'), 'w') as f:
         json.dump(vars(args), f, sort_keys=True, indent=4)
 
+    # Numpy file with returns and corresponding episode lengths
+    fname_rets = os.path.join(args.work_dir, 'returns.txt')
+
     if args.device == '':
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     else:
@@ -146,7 +155,9 @@ def main():
 
     L = Logger(args.work_dir, use_tb=args.save_tb)
 
-    episode, episode_reward, episode_step, done = 0, 0, 0, True
+    episode, ret, episode_step, done = 0, 0, 0, True
+    rets = []
+    ep_steps = []
     image, state = env.reset()
     start_time = time.time()
     for step in range(args.env_steps + args.init_steps):
@@ -160,21 +171,24 @@ def main():
         # step in the environment
         next_image, next_state, reward, done, _ = env.step(action)
 
-        episode_reward += reward
+        ret += reward
         episode_step += 1
 
         agent.push_sample(image, state, action, reward, next_image, next_state, done)
 
         if done or (episode_step == args.episode_length):  # set time out here
             L.log('train/duration', time.time() - start_time, step)
-            L.log('train/episode_reward', episode_reward, step)
+            L.log('train/return', ret, step)
             L.dump(step)
+            rets.append(ret)
+            ep_steps.append(episode_step)
             next_image, next_state = env.reset()
             done = False
-            episode_reward = 0
+            ret = 0
             episode_step = 0
             episode += 1
             L.log('train/episode', episode, step)
+            save_returns_np(fname_rets, rets, ep_steps)
             '''
             if args.save_model and step > 0 and step % args.save_model_freq == 0:
                 agent.save(model_dir, step)
@@ -191,6 +205,13 @@ def main():
     # save the last model
     if args.save_model:
         agent.save(model_dir, step)
+
+    if not done:
+        # N.B: We're adding a partial episode to have a cumulative experience of length 'env_steps'.
+        #   But this partial data point shouldn't be used for plotting!
+        rets.append(ret)
+        ep_steps.append(step)
+        save_returns_np(fname_rets, rets, ep_steps)
 
     # Clean up
     agent.close()
