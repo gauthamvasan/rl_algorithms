@@ -73,6 +73,9 @@ def parse_args():
     parser.add_argument('--device', default='cuda:0', type=str)
     parser.add_argument('--lock', default=False, action='store_true')
     parser.add_argument('--freeze_cnn', default=False, action='store_true')
+    # Number of updates
+    parser.add_argument('--update_every', default=50, type=int)
+    parser.add_argument('--update_epochs', default=50, type=int)
 
     args = parser.parse_args()
     return args
@@ -137,6 +140,8 @@ def main():
         max_updates_per_step=args.max_updates_per_step,
         init_steps=args.init_steps,
         freeze_cnn=args.freeze_cnn,
+        update_every=args.update_every,
+        update_epochs=args.update_epochs,
     )
 
     L = Logger(args.work_dir, use_tb=args.save_tb)
