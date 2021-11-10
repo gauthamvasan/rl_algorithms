@@ -15,12 +15,12 @@ FORMAT_CONFIG = {
     'rl': {
         'train': [
             ('episode', 'E', 'int'), ('step', 'S', 'int'),
-            ('duration', 'D', 'time'), ('episode_reward', 'R', 'float'),
+            ('duration', 'D', 'time'), ('return', 'R', 'float'),
             ('batch_reward', 'BR', 'float'), ('actor_loss', 'ALOSS', 'float'),
             ('entropy', 'ENT', 'float'),
             ('critic_loss', 'CLOSS', 'float'), ('num_updates', 'NUM', 'int')
         ],
-        'eval': [('step', 'S', 'int'), ('episode_reward', 'ER', 'float')]
+        'eval': [('step', 'S', 'int'), ('return', 'ER', 'float')]
     }
 }
 
