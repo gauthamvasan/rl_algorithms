@@ -110,7 +110,7 @@ def main():
     with open(os.path.join(args.work_dir, 'args.json'), 'w') as f:
         json.dump(vars(args), f, sort_keys=True, indent=4)
 
-    if args.device is '':
+    if args.device == '':
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     else:
         device = torch.device(args.device)
@@ -136,7 +136,7 @@ def main():
         batch_size=args.batch_size,
         max_updates_per_step=args.max_updates_per_step,
         init_steps=args.init_steps,
-        freeze_cnn=args.freeze_cnn
+        freeze_cnn=args.freeze_cnn,
     )
 
     L = Logger(args.work_dir, use_tb=args.save_tb)
