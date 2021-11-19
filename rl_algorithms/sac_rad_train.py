@@ -11,13 +11,34 @@ from rl_algorithms.agent.sac_rad import SacRadAgent
 from rl_algorithms.logger import Logger
 from rl_algorithms.envs.visual_mujoco_reacher import VisualMujocoReacher2D
 
-config = {
+# Spatial softmax encoder
+ss_config = {
     'conv': [
         # in_channel, out_channel, kernel_size, stride
         [-1, 32, 3, 2],
         [32, 32, 3, 2],
         [32, 32, 3, 2],
         [32, 32, 3, 1],
+    ],
+
+    'latent': 50,
+
+    'mlp': [
+        [-1, 1024],
+        [1024, 1024],
+        [1024, -1]
+    ],
+}
+
+# Visuomotor Encoder
+config = {
+    'conv': [
+        # in_channel, out_channel, kernel_size, stride
+        [-1, 32, 3, 2],
+        [32, 64, 3, 2],
+        [64, 64, 3, 2],
+        [64, 64, 3, 2],
+        [64, 64, 3, 1],
     ],
 
     'latent': 256,

@@ -145,6 +145,93 @@ class SSEncoderModel(nn.Module):
             raise NotImplementedError('Invalid encoder type')
 
 
+class VisuomotorEncoder(nn.Module):
+    """Convolutional encoder of pixels observations. Uses Max pooling, Avg pooling and Spatial Softmax"""
+
+    def __init__(self, image_shape, proprioception_shape, net_params, rad_offset):
+        super().__init__()
+
+        if image_shape[-1] != 0:  # use image
+            c, h, w = image_shape
+            self.rad_h = round(rad_offset * h)
+            self.rad_w = round(rad_offset * w)
+            image_shape = (c, h - 2 * self.rad_h, w - 2 * self.rad_w)
+
+            conv_params = net_params['conv']
+            latent_dim = net_params['latent']
+            channel, height, width = image_shape
+            conv_params[0][0] = channel
+            layers = []
+            for i, (in_channel, out_channel, kernel_size, stride) in enumerate(conv_params):
+                layers.append(nn.Conv2d(in_channel, out_channel, kernel_size, stride))
+                if i < len(conv_params) - 1:
+                    layers.append(nn.ReLU())
+                width = conv_out_size(width, kernel_size, stride)
+                height = conv_out_size(height, kernel_size, stride)
+
+            layers.append(nn.Flatten())
+            self.convs = nn.Sequential(
+                *layers
+            )
+
+            self.img_feat = nn.Sequential(
+                nn.Linear(conv_params[-1][1] * width * height, latent_dim),
+                nn.ReLU(),
+            )
+            self.latent_dim = latent_dim
+
+            self.apply(weight_init)
+
+            if proprioception_shape[-1] == 0:  # no proprioception readings
+                self.encoder_type = 'pixel'
+
+            else:  # image with proprioception
+                self.encoder_type = 'multi'
+                # TODO: Use configurable parameter instead of hardcoding
+                prop_latent = 64
+                self.prop_feat = nn.Sequential(
+                    nn.Linear(proprioception_shape[0], prop_latent),
+                    nn.ReLU(),
+                )
+                self.latent_dim += prop_latent
+
+        elif proprioception_shape[-1] != 0:
+            self.encoder_type = 'proprioception'
+            self.latent_dim = proprioception_shape[0]
+
+        else:
+            raise NotImplementedError('Invalid observation combination')
+
+
+    def forward(self, images, proprioceptions, random_rad=True, detach=False):
+        if self.encoder_type == 'proprioception':
+            return proprioceptions
+
+        if self.encoder_type == 'pixel' or self.encoder_type == 'multi':
+            images = images / 255.
+            if random_rad:
+                images = random_augment(images, self.rad_h, self.rad_w)
+            else:
+                n, c, h, w = images.shape
+                images = images[:, :,
+                         self.rad_h: h - self.rad_h,
+                         self.rad_w: w - self.rad_w,
+                         ]
+
+            img = self.convs(images)
+            h = self.img_feat(img)
+            if detach:
+                h = h.detach()
+
+            if self.encoder_type == 'multi':
+                prop_phi = self.prop_feat(proprioceptions)
+                h = torch.cat([h, prop_phi], dim=-1)
+
+            return h
+        else:
+            raise NotImplementedError('Invalid encoder type')
+
+
 class MASSEncoderModel(nn.Module):
     """Convolutional encoder of pixels observations. Uses Max pooling, Avg pooling and Spatial Softmax"""
 
@@ -268,7 +355,8 @@ class ActorModel(nn.Module):
         super().__init__()
 
         # self.encoder = SSEncoderModel(image_shape, proprioception_shape, net_params, rad_offset)
-        self.encoder = MASSEncoderModel(image_shape, proprioception_shape, net_params, rad_offset)
+        # self.encoder = MASSEncoderModel(image_shape, proprioception_shape, net_params, rad_offset)
+        self.encoder = VisuomotorEncoder(image_shape, proprioception_shape, net_params, rad_offset)
         if freeze_cnn:
             print("Actor CNN weights won't be trained!")
             for param in self.encoder.parameters():
@@ -351,7 +439,8 @@ class CriticModel(nn.Module):
         super().__init__()
 
         # self.encoder = SSEncoderModel(image_shape, proprioception_shape, net_params, rad_offset)
-        self.encoder = MASSEncoderModel(image_shape, proprioception_shape, net_params, rad_offset)
+        # self.encoder = MASSEncoderModel(image_shape, proprioception_shape, net_params, rad_offset)
+        self.encoder = VisuomotorEncoder(image_shape, proprioception_shape, net_params, rad_offset)
         if freeze_cnn:
             print("Critic CNN weights won't be trained!")
             for param in self.encoder.parameters():
