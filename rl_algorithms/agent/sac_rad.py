@@ -74,7 +74,10 @@ class SacRadAgent:
         self.critic_target = copy.deepcopy(self.critic)  # also copies the encoder instance
 
         if hasattr(self.actor.encoder, 'convs'):
+            # TODO: Max this a configurable parameter
             self.actor.encoder.convs = self.critic.encoder.convs
+            print("Sharing CNN weights between Actor and Critic")
+
         self.log_alpha = torch.tensor(np.log(init_temperature)).to(device)
         self.log_alpha.requires_grad = True
         # set target entropy to -|A|

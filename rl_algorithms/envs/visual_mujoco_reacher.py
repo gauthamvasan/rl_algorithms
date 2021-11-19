@@ -84,7 +84,6 @@ class VisualMujocoReacher2D(gym.Wrapper):
         return img
 
     def _get_ob(self, ob):
-
         return np.array(list(ob[0:4]) + list(ob[6:8]))
 
     def close(self):
