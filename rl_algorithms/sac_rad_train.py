@@ -30,17 +30,17 @@ ss_config = {
     ],
 }
 
-# Visuomotor Encoder
+# MASSEncoder
 config = {
     'conv': [
         # in_channel, out_channel, kernel_size, stride
         [-1, 32, 3, 2],
-        [32, 64, 3, 2],
-        [64, 64, 3, 2],
-        [64, 64, 3, 1],
+        [32, 32, 3, 2],
+        [32, 32, 3, 2],
+        [32, 32, 3, 1],
     ],
 
-    'latent': 256,
+    'latent': 128,
 
     'mlp': [
         [-1, 1024],
