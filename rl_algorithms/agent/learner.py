@@ -121,8 +121,9 @@ class PPO(BatchActorCritic):
                                                             rewards.to(self.device), old_lprobs.to(self.device), \
                                                             dones.to(self.device)
         with torch.no_grad():
-            vals = self.critic(torch.cat([
-                observations, torch.as_tensor(next_obs.astype(np.float32), device=self.device).view(1, -1)]))
+            if not torch.is_tensor(next_obs):
+                next_obs = torch.as_tensor(next_obs.astype(np.float32), device=self.device).view(1, -1)
+            vals = self.critic(torch.cat([observations, next_obs], dim=0))
         rets, advs = self.estimate_returns_advantages(rewards=rewards, dones=dones, vals=vals)
 
         # Normalize advantages

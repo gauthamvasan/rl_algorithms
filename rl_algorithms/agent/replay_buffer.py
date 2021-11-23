@@ -1,6 +1,7 @@
 import time
-
+import threading
 import torch
+
 import numpy as np
 
 from collections import namedtuple
@@ -26,7 +27,11 @@ class SimpleBuffer(Dataset):
         else:
             raise NotImplemented
 
-        observations = torch.from_numpy(np.stack(batch.obs).astype(np.float32))
+        if torch.is_tensor(batch.obs[0]):
+            observations = torch.cat(batch.obs, dim=0)
+        else:
+            observations = torch.from_numpy(np.stack(batch.obs).astype(np.float32))
+
         actions = torch.from_numpy(np.stack(batch.action).astype(np.float32))
         rewards = torch.from_numpy(np.stack(batch.reward).astype(np.float32))
         dones = torch.from_numpy(np.stack(batch.done).astype(np.float32))
